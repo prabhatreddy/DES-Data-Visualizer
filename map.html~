@@ -1,0 +1,66 @@
+<html>
+  <head>
+    <title>Demo map</title>
+    <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/leaflet.css" />
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/leaflet.js"></script>
+  </head>
+
+  <body>
+    <div id="map" style = "height: 512px; width: 512px"></div>
+      <script>
+
+        var map = L.map('map').setView([37.5, 37.5], 3);
+        L.tileLayer('bg.png', {
+          maxZoom: 10,
+          continuousWorld: true,
+          noWrap: true,
+        }).addTo(map);
+
+        var objects = [];
+
+        for(i = 0; i < 100; i++){
+          a = (90*Math.random())-1;
+          b = (90*Math.random())-1;
+          r = 10000 * Math.random();
+          c = getRandomColor();
+          objects[objects.length] = L.circle([a, b], r, {
+            color: c,
+            fillOpacity: 1,
+            weight: 0
+          })
+
+          position = "ID: " + i + " RA: " + a + " DEC: " + b + " SIZE: " + r + " COLOR: " + c;
+          objects[i].bindPopup(position);
+        }
+
+        function getRandomColor() {
+          var letters = '0123456789ABCDEF'.split('');
+          var color = '#';
+          for (var i = 0; i < 6; i++ ) {
+            color += letters[Math.floor(Math.random() * 16)];
+          }
+          return color;
+        }
+
+        for(i = 0; i < objects.length; i++){
+          if(objects[i].getRadius() > 9500)
+            objects[i].addTo(map);
+        }
+
+
+        map.on('zoomend', function zoomChanged(e) {
+          zoomlevel = map.getZoom();
+          minsize = 100000/(10^zoomlevel);
+          
+          for(i = 0; i < objects.length; i++){
+            map.removeLayer(objects[i]);
+            rad = objects[i].getRadius();
+            if(rad > minsize){
+              objects[i].addTo(map);
+            }
+          }
+        });
+
+    </script>
+  </body>
+</html>
