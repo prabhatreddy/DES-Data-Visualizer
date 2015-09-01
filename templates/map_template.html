@@ -1,0 +1,115 @@
+<html>
+  <head>
+    <title>Demo map</title>
+    <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/leaflet.css" />
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/leaflet.js"></script>
+    <script src="l.ellipse.js"></script>
+  </head>
+
+  <body>
+    <div id="map" style = "height: 512px; width: 512px"></div>
+    <script>
+
+/*Todo:
+ *DB backend
+ *Server
+ *Cache data
+ */
+
+      map.on('load', function loadMap(e) {
+        //Todo: Add implementation
+        /*Equivalent to main method
+         *Called when map is first loaded
+         *Loads the initial map
+         *return type: void
+         */
+      });
+
+      function mapBoundsChanged(e) {
+        //Todo: Add implementation
+        /*Called when the map bounds are changed, either by zoom or move
+         *Gets the new map bounds
+         *Calls getData() with those bounds as parameters
+         *return type: void
+         */
+
+        var mapBounds = map.getBounds();
+        getData(mapBounds);
+      }
+
+      map.on('moveend', mapBoundsChanged);
+      map.on('zoomend', mapBoundsChanged);
+
+      function getData(mapBounds) {
+        //Todo: Add implementation
+        /*Called by mapBoundsChanged()
+         *Fetches data from db using the map bounds as query arguments
+         *Calls dataToObjects() with data as parameter
+         *return type: void
+         */
+
+        var bounds = mapBounds.toBBoxString().split(',');
+        var ra_min = bounds[0]; var ra_max = bounds[2];
+        var dec_min = bounds[1]; var dec_max = bounds[3];
+        query = "select * from data where RA between " + ra_min + " and " + ra_max + ", DEC between " + dec_min + " and " + dec_max + ";";
+        //data = exec_query(query);
+        dataToObjects(data);        
+      }
+
+      function dataToObjects(data) {
+        //Todo: Add implementation
+        /*Called by getData()
+         *Convert the db data into objects and stores them in an array
+         *Calls drawData() with the objects array as parameter
+         *return type: void
+         */
+
+        var objects = [];
+        //file = data.readfile()
+        //while line {
+          //info = line.split(',');
+          //ra = info[0];
+          //dec = info[1];
+          //a = info[3];
+          //b =  info[4];
+          //theta = info[5];
+          //colour = info[6];
+          //objects[objects.length] = L.ellipse([ra, dec], [a,b], theta, {
+            //color: colour,
+            //fillOpacity: 1,
+            //weight: 0
+          //}
+        //}
+        drawData(objects)
+      }
+
+      function drawData(objects) {
+        //Todo: Add implementation
+        /*Called by drawData()
+         *Calls isVisible() to check if the objects are visible at the current zoom level
+         *Draws the objects from the array onto the map if isVisible() = true
+         *return type: void
+         */
+
+        for(i = 0; i < objects.length; i++){
+          if(objects[i].isVisible())
+            objects[i].addToMap();
+      }
+
+      function isVisible(/*args (object)*/) {
+        //Todo: Add implementation
+        /*Called by drawData()
+         *Checks if object is visible at the current zoom level
+         *return type: boolean
+         */
+
+        zoomlevel = map.getZoom();
+        minsize = //mathematical function of size
+        if(object.getRadius() > minsize)
+          return true;
+        return false;
+      }
+
+    </script>
+  </body>
+</html>

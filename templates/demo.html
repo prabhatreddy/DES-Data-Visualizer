@@ -1,0 +1,84 @@
+<html>
+  <head>
+    <title>Demo map</title>
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css" />
+    <script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
+    <script src='https://api.tiles.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v0.0.4/Leaflet.fullscreen.min.js'></script>
+    <link href='https://api.tiles.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v0.0.4/leaflet.fullscreen.css' rel='stylesheet' />
+    <script src='Leaflet.MousePosition/src/L.Control.MousePosition.js'></script>
+    <link href='Leaflet.MousePosition/src/L.Control.MousePosition.css' rel='stylesheet' />
+    <script src='Leaflet.Coordinates/dist/Leaflet.Coordinates-0.1.4.src.js'></script>
+    <link href='Leaflet.Coordinates/dist/Leaflet.Coordinates-0.1.4.css' rel='stylesheet' />
+  </head>
+
+  <body>
+    <div id="map" style = "height: 512px; width: 512px"></div>
+    <script>
+
+      //initialize map
+      var map = new L.map('map', {
+        center: [0.7305505, 322.65],
+        //crs: L.CRS.RADEC,
+        zoomControl : true,
+        attributionControl : false,
+        minZoom: 13,
+        maxZoom: 25,	
+        zoom: 1
+      });
+
+      //add black background to map
+      var bg = L.tileLayer('./static/bg.png', {maxZoom: 25, continuousWorld: true, noWrap: true} );
+      bg.addTo(map);
+
+      //convert data to objects
+      var data = {
+        "type": "FeatureCollection",
+        "features": [
+          //loop through csv file to get data
+          {% for obj in object_list %}
+            {
+              "type": "Feature",
+              "properties": { 
+                "RA": "{{ obj.RA }}",
+                "DEC": "{{ obj.DEC }}",
+                "SemimajorAxis": "{{ obj.A_IMAGE }}",
+                "SemiminorAxis": "{{ obj.B_IMAGE }}", 
+                "Orientation": "{{ obj.THETA_IMAGE }}",
+                "Color": "{{ obj.COLOR }}",
+                "popupContent": "RA: {{ obj.RA }}, DEC: {{ obj.DEC }}, Radius: {{ obj.A_IMAGE }}"
+              },
+              "geometry": {
+                "type": "Point",
+                "coordinates": [{{ obj.RA }}, {{ obj.DEC }}],
+              }
+            }
+            {% if not loop.last %},{% endif %}
+          {% endfor %}
+        ]
+      };
+
+      //draw objects on map
+      L.geoJson(data, {
+        //set up popup with info
+        onEachFeature: function onEachFeature(feature, layer) {
+          if (feature.properties && feature.properties.popupContent) {
+            layer.bindPopup(feature.properties.popupContent);
+          }
+        },
+        //replace default marker with custom one (circle)
+        pointToLayer: function(feature, latlng) {
+          return L.circleMarker(latlng, {
+            radius: feature.properties.SemimajorAxis,
+            color: "#0099ff",
+            weight: 0,
+            fillOpacity: 1
+          });
+        }
+      }).addTo(map);
+
+L.control.fullscreen().addTo(map);
+L.control.mousePosition({lngFirst: true, prefix : 'RA,DEC = '}).addTo(map);
+
+    </script>
+  </body>
+</html>

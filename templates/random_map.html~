@@ -1,0 +1,72 @@
+<html>
+  <head>
+    <title>Demo map</title>
+    <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/leaflet.css" />
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/leaflet.js"></script>
+  </head>
+
+  <body>
+    <div id="map" style = "height: 512px; width: 512px"></div>
+    <script>
+
+      //initialize map
+      var map = L.map('map').setView([37.5, 37.5], 0);
+
+      //add black background to map
+      L.tileLayer('./static/bg.png', {maxZoom: 10, continuousWorld: true, noWrap: true} ).addTo(map);
+
+      //L.circle([37.5, 37.5], 8000000).addTo(map);
+
+      var data = {
+        "type": "FeatureCollection",
+        "features": [
+          {% for obj in object_list %}
+            {
+              "type": "Feature",
+
+              "properties": { 
+                "RA": "{{ obj.RA }}",
+                "DEC": "{{ obj.DEC }}",
+                "Semi-major axis": "{{ obj.A_IMAGE }}",
+                "Semi-minor axis": "{{ obj.B_IMAGE }}", 
+                "Orientation": "{{ obj.THETA_IMAGE }}",
+                "Color": "{{ obj.COLOR }}",
+                "popupContent": "RA: {{ obj.RA }}, DEC: {{ obj.DEC }}"
+              },
+
+              "geometry": {
+                "type": "Point",
+                "coordinates": [{{ obj.RA }}, {{ obj.DEC }}],
+              }
+            }
+            {% if not loop.last %},{% endif %}
+          {% endfor %}
+        ]
+      };
+
+      var geojsonMarkerOptions = {
+        radius: 8,
+        color: "#ffffff",
+        weight: 0,
+        fillOpacity: 1
+      };
+
+      L.geoJson(data, {
+
+        onEachFeature: function onEachFeature(feature, layer) {
+          if (feature.properties && feature.properties.popupContent) {
+            layer.bindPopup(feature.properties.popupContent);
+          }
+        }, 
+
+        pointToLayer: function(feature, latlng) {
+          return L.circleMarker(latlng, geojsonMarkerOptions);
+        }
+
+      }).addTo(map);
+
+      
+
+    </script>
+  </body>
+</html>
