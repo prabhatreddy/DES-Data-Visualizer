@@ -1,0 +1,109 @@
+<html>
+  <meta charset = "utf-8">
+  <style>
+    body {
+	  font: 11px sans-serif;
+	}
+	
+	.tooltip {
+	  position: absolute;
+	  width: 200px;
+	  height: 28px;
+	  pointer-events: none;
+	  color: white;
+	}
+  </style>
+  <head>
+    <script src = "d3.min.js" charset = "utf-8"></script>
+  </head>
+  <body>
+    <script>
+	var width = 960,
+	    height = 500;
+	
+	//setup RA
+	var RAValue = function(d) { return d["RA"]; },
+	    RAScale = d3.scale.linear().range([0, width]),
+		RAMap = function(d) { return RAScale(RAValue(d)); };
+	
+	//setup DEC
+	var DECValue = function(d) { return d["DEC"]; },
+	    DECScale = d3.scale.linear().range([height, 0]),
+		DECMap = function(d) { return DECScale(DECValue(d)); };
+		
+	//setup A
+	var AValue = function(d) { return d["A_IMAGE"]; },
+	    AScale = d3.scale.linear().range([1, 10]);
+		AMap = function(d) { return AScale(AValue(d)); };
+		
+	//setup B
+	var BValue = function(d) { return d["B_IMAGE"]; },
+	    BScale = d3.scale.linear().range([1, 10]);	
+		BMap = function(d) { return BScale(BValue(d)); };
+		
+	//setup Theta
+	var TValue = function(d) { return d["THETA_IMAGE"]; },
+	    TScale = d3.scale.linear().range([0, 90]),
+		TMap = function(d) { return TScale(TValue(d)); };
+	
+    //add canvas to page	
+	var svg = d3.select("body").append("svg")
+        .attr("width", width)
+		.attr("height", height)
+		.call(d3.behavior.zoom().on("zoom", function () { svg.attr("transform", "translate(" + d3.event.translate + ")" + " scale(" + d3.event.scale + ")") }))
+      .append("g");
+	  
+	  
+	svg.append("rect")
+    .attr("width", "100%")
+    .attr("height", "100%")
+    .attr("fill", "black");  
+	
+	//add tooltip area
+	var tooltip = d3.select("body").append("div")
+	    .attr("class", "tooltip")
+		.style("opacity", 0);
+	
+	//load data
+	d3.csv("data.csv", function(error, data) {
+	  data.forEach(function(d) {
+	    d["RA"] = +d["RA"];
+		d["DEC"] = +d["DEC"];
+		d["A_IMAGE"] = +d["A_IMAGE"];
+		d["B_IMAGE"] = +d["B_IMAGE"];
+		d["THETA_IMAGE"] = +d["THETA_IMAGE"];
+	  }); 
+	  
+	  RAScale.domain(d3.extent(data, function(d) { return d["RA"]; }));
+	  DECScale.domain(d3.extent(data, function(d) { return d["DEC"]; }));
+	  AScale.domain(d3.extent(data, function(d) { return d["A_IMAGE"]; }));
+	  BScale.domain(d3.extent(data, function(d) { return d["B_IMAGE"]; }));
+	  TScale.domain(d3.extent(data, function(d) { return d["THETA_IMAGE"]; }));
+	
+	  svg.selectAll(".dot")
+	      .data(data)
+	    .enter().append("ellipse")
+	      .attr("class", "dot")
+		  .attr("cx", RAMap)
+		  .attr("cy", DECMap)
+		  .attr("rx", AMap)
+		  .attr("ry", BMap)
+		  .attr('transform', 'rotate('+ TMap + ' ' + RAMap + ' ' + DECMap + ')')
+		  .style("fill", "cyan")
+		  .on("mouseover", function(d) {
+		    tooltip.transition()
+		        .duration(200)
+			    .style("opacity", .9);
+		    tooltip.html("RA: " + RAValue(d) + ", DEC: " + DECValue(d) + ")")
+		        .style("left", (d3.event.pageX + 5) + "px")
+			    .style("top", (d3.event.pageY - 28) + "px");
+		  })
+		  .on("mouseout", function(d) {
+		    tooltip.transition()
+		        .duration(500)
+			    .style("opacity", 0);
+		  });
+	});	  
+	</script>
+  </body>
+</html>  
